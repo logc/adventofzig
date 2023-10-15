@@ -1,9 +1,40 @@
 const std = @import("std");
+const str = @import("strings.zig");
 const mem = std.mem;
+const Md5 = std.crypto.hash.Md5;
 
 const expect = std.testing.expect;
 
 pub const Solutions = struct { first: i32, second: i32 };
+
+pub fn theIdealStockingStuffer(alloc: mem.Allocator, input: []const u8) !Solutions {
+    var num: i32 = 0;
+    var fiveNotFound = true;
+    var sixNotFound = true;
+    var lowestFiveZeros: i32 = 0;
+    var lowestSixZeros: i32 = 0;
+    const seed = mem.trimRight(u8, input, "\n");
+    while (fiveNotFound or sixNotFound) : (num += 1) {
+        var s = std.fmt.allocPrint(alloc, "{d}", .{num}) catch @panic("Unhandled");
+        defer alloc.free(s);
+        var h = Md5.init(.{});
+        var buf: [Md5.digest_length]u8 = undefined;
+        h.update(seed);
+        h.update(s);
+        h.final(&buf);
+        var hash_hex = std.fmt.allocPrint(alloc, "{s}", .{std.fmt.fmtSliceHexUpper(&buf)}) catch @panic("Unhandled");
+        defer alloc.free(hash_hex);
+        if (mem.eql(u8, hash_hex[0..5], "00000") and fiveNotFound) {
+            fiveNotFound = false;
+            lowestFiveZeros = num;
+        }
+        if (mem.eql(u8, hash_hex[0..6], "000000")) {
+            sixNotFound = false;
+            lowestSixZeros = num;
+        }
+    }
+    return Solutions{ .first = lowestFiveZeros, .second = lowestSixZeros };
+}
 
 pub fn perfectlySphericalHousesInAVacuum(alloc: mem.Allocator, input: []const u8) !Solutions {
     const positionsCount = try moveSanta(alloc, input);

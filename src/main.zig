@@ -1,6 +1,7 @@
 const clap = @import("clap");
 const std = @import("std");
 const aoc = @import("aoc.zig");
+const str = @import("strings.zig");
 
 const debug = std.debug;
 const io = std.io;
@@ -16,15 +17,18 @@ pub fn main() !void {
     var puzzleInput = readPuzzleInput(alloc, cliArgs.year, cliArgs.day) catch "";
     defer alloc.free(puzzleInput);
     var solutions = aoc.Solutions{ .first = 0, .second = 0 };
-    if (mem.eql(u8, cliArgs.year, "2015")) {
-        if (mem.eql(u8, cliArgs.day, "01")) {
+    if (str.equals(cliArgs.year, "2015")) {
+        if (str.equals(cliArgs.day, "01")) {
             solutions = aoc.notQuiteLisp(puzzleInput);
         }
-        if (mem.eql(u8, cliArgs.day, "02")) {
+        if (str.equals(cliArgs.day, "02")) {
             solutions = aoc.iWasToldThereWouldBeNoMath(puzzleInput);
         }
-        if (mem.eql(u8, cliArgs.day, "03")) {
+        if (str.equals(cliArgs.day, "03")) {
             solutions = try aoc.perfectlySphericalHousesInAVacuum(alloc, puzzleInput);
+        }
+        if (str.equals(cliArgs.day, "04")) {
+            solutions = try aoc.theIdealStockingStuffer(alloc, puzzleInput);
         }
     }
     std.debug.print("Puzzle 1: {d}\nPuzzle 2: {d}\n", .{ solutions.first, solutions.second });
