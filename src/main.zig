@@ -23,6 +23,9 @@ pub fn main() !void {
         if (mem.eql(u8, cliArgs.day, "02")) {
             solutions = aoc.iWasToldThereWouldBeNoMath(puzzleInput);
         }
+        if (mem.eql(u8, cliArgs.day, "03")) {
+            solutions = try aoc.perfectlySphericalHousesInAVacuum(alloc, puzzleInput);
+        }
     }
     std.debug.print("Puzzle 1: {d}\nPuzzle 2: {d}\n", .{ solutions.first, solutions.second });
 }

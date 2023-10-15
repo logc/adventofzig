@@ -1,8 +1,82 @@
 const std = @import("std");
+const mem = std.mem;
 
 const expect = std.testing.expect;
 
 pub const Solutions = struct { first: i32, second: i32 };
+
+pub fn perfectlySphericalHousesInAVacuum(alloc: mem.Allocator, input: []const u8) !Solutions {
+    const positionsCount = try moveSanta(alloc, input);
+    const doublePositionsCount = try moveSantaAndRobo(alloc, input);
+
+    const uniques = @as(i32, @intCast(positionsCount));
+    const doubleUniques = @as(i32, @intCast(doublePositionsCount));
+    return Solutions{ .first = uniques, .second = doubleUniques };
+}
+
+fn moveSanta(alloc: mem.Allocator, input: []const u8) !u32 {
+    const Position = struct { x: i32, y: i32 };
+    var positions = std.AutoHashMap(Position, void).init(alloc);
+    defer positions.deinit();
+    var santa = Position{ .x = 0, .y = 0 };
+    try positions.put(santa, {});
+    for (input) |char| {
+        if (char == '>') santa.x += 1;
+        if (char == '<') santa.x -= 1;
+        if (char == '^') santa.y += 1;
+        if (char == 'v') santa.y -= 1;
+        try positions.put(santa, {});
+    }
+    return positions.count();
+}
+
+fn moveSantaAndRobo(alloc: mem.Allocator, input: []const u8) !u32 {
+    const Position = struct { x: i32, y: i32 };
+    var doublePositions = std.AutoHashMap(Position, void).init(alloc);
+    defer doublePositions.deinit();
+    var newSanta = Position{ .x = 0, .y = 0 };
+    var roboSanta = Position{ .x = 0, .y = 0 };
+    try doublePositions.put(newSanta, {});
+    try doublePositions.put(roboSanta, {});
+    for (input, 0..) |char, idx| {
+        if (idx % 2 == 0) {
+            if (char == '>') newSanta.x += 1;
+            if (char == '<') newSanta.x -= 1;
+            if (char == '^') newSanta.y += 1;
+            if (char == 'v') newSanta.y -= 1;
+        }
+        if (idx % 2 != 0) {
+            if (char == '>') roboSanta.x += 1;
+            if (char == '<') roboSanta.x -= 1;
+            if (char == '^') roboSanta.y += 1;
+            if (char == 'v') roboSanta.y -= 1;
+        }
+        try doublePositions.put(newSanta, {});
+        try doublePositions.put(roboSanta, {});
+    }
+    return doublePositions.count();
+}
+
+test "Perfectly Spherical Houses In A Vacuum" {
+    const alloc = std.testing.allocator;
+    const input1 = ">";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input1)).first == 2);
+
+    const input2 = "^>v<";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input2)).first == 4);
+
+    const input3 = "^v^v^v^v^v";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input3)).first == 2);
+
+    const input4 = "^v";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input4)).second == 3);
+
+    const input5 = "^>v<";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input5)).second == 3);
+
+    const input6 = "^v^v^v^v^v";
+    try expect((try perfectlySphericalHousesInAVacuum(alloc, input6)).second == 11);
+}
 
 pub fn iWasToldThereWouldBeNoMath(input: []const u8) Solutions {
     const Dimensions = struct { l: i32, w: i32, h: i32 };
