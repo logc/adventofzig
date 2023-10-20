@@ -7,6 +7,44 @@ const expect = std.testing.expect;
 
 pub const Solutions = struct { first: i32, second: i32 };
 
+pub fn doesntHeHaveInternElvesForThis(alloc: mem.Allocator, input: []const u8) !Solutions {
+    var lines = std.mem.split(u8, input, "\n");
+    var niceLineCount: i32 = 0;
+    var newNiceLinesCount: i32 = 0;
+    while (lines.next()) |line| {
+        if (isNice(line)) niceLineCount += 1;
+        if (try isNewNice(alloc, line)) newNiceLinesCount += 1;
+    }
+    return Solutions{ .first = niceLineCount, .second = newNiceLinesCount };
+}
+
+fn isNice(s: []const u8) bool {
+    const vowelsCount = str.countVowels(s);
+    const repeatsCount = str.countRepeated(s);
+    const forbiddenCount = str.countForbidden(s);
+    return vowelsCount >= 3 and repeatsCount >= 1 and forbiddenCount == 0;
+}
+
+fn isNewNice(alloc: mem.Allocator, s: []const u8) !bool {
+    const repeatNoOverlapCount = try str.countRepeatedNoOverlap(alloc, s);
+    const repeatWithOneBetweeCount = str.countRepeatWithOneBetween(s);
+    return repeatNoOverlapCount > 0 and repeatWithOneBetweeCount > 0;
+}
+
+test "Doesn't He Have Intern-Elves For This?" {
+    try expect(isNice("ugknbfddgicrmopn") == true);
+    try expect(isNice("aaa") == true);
+    try expect(isNice("jchzalrnumimnmhp") == false);
+    try expect(isNice("haegwjzuvuyypxyu") == false);
+    try expect(isNice("dvszwmarrgswjxmb") == false);
+
+    const alloc = std.testing.allocator;
+    try expect(try isNewNice(alloc, "qjhvhtzxzqqjkmpb") == true);
+    try expect(try isNewNice(alloc, "xxyxx") == true);
+    try expect(try isNewNice(alloc, "uurcxstgmygtbstg") == false);
+    try expect(try isNewNice(alloc, "ieodomkazucvgmuy") == false);
+}
+
 pub fn theIdealStockingStuffer(alloc: mem.Allocator, input: []const u8) !Solutions {
     var num: i32 = 0;
     var fiveNotFound = true;

@@ -30,6 +30,9 @@ pub fn main() !void {
         if (str.equals(cliArgs.day, "04")) {
             solutions = try aoc.theIdealStockingStuffer(alloc, puzzleInput);
         }
+        if (str.equals(cliArgs.day, "05")) {
+            solutions = try aoc.doesntHeHaveInternElvesForThis(alloc, puzzleInput);
+        }
     }
     std.debug.print("Puzzle 1: {d}\nPuzzle 2: {d}\n", .{ solutions.first, solutions.second });
 }
