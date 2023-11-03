@@ -33,6 +33,9 @@ pub fn main() !void {
         if (str.equals(cliArgs.day, "05")) {
             solutions = try aoc.doesntHeHaveInternElvesForThis(alloc, puzzleInput);
         }
+        if (str.equals(cliArgs.day, "06")) {
+            solutions = aoc.probablyAFireHazard(puzzleInput);
+        }
     }
     std.debug.print("Puzzle 1: {d}\nPuzzle 2: {d}\n", .{ solutions.first, solutions.second });
 }

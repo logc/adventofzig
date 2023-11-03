@@ -7,6 +7,109 @@ const expect = std.testing.expect;
 
 pub const Solutions = struct { first: i32, second: i32 };
 
+const InstructionType = enum { turnOn, turnOff, toggle };
+const GridPosition = struct { x: u32, y: u32 };
+const Instruction = struct { itype: InstructionType, topLeft: GridPosition, bottomRight: GridPosition };
+
+pub fn Grid(comptime m: usize, comptime n: usize) type {
+    return struct {
+        const Self = @This();
+
+        pub const rows = m;
+        pub const cols = n;
+
+        data: [rows * cols]bool,
+
+        pub fn init() Self {
+            return Self{ .data = [_]bool{false} ** (rows * cols) };
+        }
+
+        pub fn get(self: Self, row: usize, col: usize) bool {
+            return self.data[row * cols + col];
+        }
+
+        pub fn set(self: Self, row: usize, col: usize, val: bool) void {
+            self.data[row * cols + col] = val;
+        }
+    };
+}
+
+test "Grid" {}
+
+pub fn probablyAFireHazard(input: []const u8) Solutions {
+    var lines = std.mem.split(u8, input, "\n");
+    while (lines.next()) |line| {
+        const instruction = parseInstruction(line);
+        performInstruction(instruction);
+    }
+}
+
+fn performInstruction(instruction: Instruction, grid: Grid) void {
+    _ = grid;
+    _ = instruction;
+}
+
+test "perform instructions" {
+    var instruction = Instruction{ .itype = InstructionType.toggle, .topLeft = GridPosition{ .x = 0, .y = 0 }, .bottomRight = GridPosition{ .x = 3, .y = 3 } };
+    const actual = performInstruction(instruction, grid);
+    //try expect(std.meta.eql(actual, expected));
+    try expect(actual == expected);
+}
+
+fn parseInstruction(line: []const u8) !Instruction {
+    var idx: usize = 0;
+    var instructionType = InstructionType.toggle;
+    if (str.equals(line[0..6], "toggle")) {
+        idx = 6;
+        instructionType = InstructionType.toggle;
+    }
+    if (str.equals(line[0..7], "turn on")) {
+        idx = 7;
+        instructionType = InstructionType.turnOn;
+    }
+    if (str.equals(line[0..8], "turn off")) {
+        idx = 8;
+        instructionType = InstructionType.turnOff;
+    }
+    const rest = line[idx + 1 .. line.len];
+    var tokens = std.mem.split(u8, rest, " ");
+    const topLeftToken = tokens.next().?;
+    const topLeftPos = try parsePosition(topLeftToken);
+    _ = tokens.next().?;
+    const bottomRightToken = tokens.next().?;
+    const bottomRightPos = try parsePosition(bottomRightToken);
+    return Instruction{ .itype = instructionType, .topLeft = topLeftPos, .bottomRight = bottomRightPos };
+}
+
+fn parsePosition(token: []const u8) !GridPosition {
+    var xYTokens = std.mem.split(u8, token, ",");
+    const x = try std.fmt.parseInt(u32, xYTokens.next().?, 10);
+    const y = try std.fmt.parseInt(u32, xYTokens.next().?, 10);
+    return GridPosition{ .x = x, .y = y };
+}
+
+test "parse instruction" {
+    const example1 = "toggle 461,550 through 564,900";
+    const expected1 = Instruction{ .itype = InstructionType.toggle, .topLeft = GridPosition{ .x = 461, .y = 550 }, .bottomRight = GridPosition{ .x = 564, .y = 900 } };
+    const actual1 = parseInstruction(example1);
+    try expect(std.meta.eql(actual1, expected1));
+
+    const example2 = "toggle 50,472 through 452,788";
+    const expected2 = Instruction{ .itype = InstructionType.toggle, .topLeft = GridPosition{ .x = 50, .y = 472 }, .bottomRight = GridPosition{ .x = 452, .y = 788 } };
+    const actual2 = parseInstruction(example2);
+    try expect(std.meta.eql(actual2, expected2));
+
+    const example3 = "turn on 0,0 through 999,999";
+    const expected3 = Instruction{ .itype = InstructionType.turnOn, .topLeft = GridPosition{ .x = 0, .y = 0 }, .bottomRight = GridPosition{ .x = 999, .y = 999 } };
+    const actual3 = parseInstruction(example3);
+    try expect(std.meta.eql(actual3, expected3));
+
+    const example4 = "turn off 499,499 through 500,500";
+    const expected4 = Instruction{ .itype = InstructionType.turnOff, .topLeft = GridPosition{ .x = 499, .y = 499 }, .bottomRight = GridPosition{ .x = 500, .y = 500 } };
+    const actual4 = parseInstruction(example4);
+    try expect(std.meta.eql(actual4, expected4));
+}
+
 pub fn doesntHeHaveInternElvesForThis(alloc: mem.Allocator, input: []const u8) !Solutions {
     var lines = std.mem.split(u8, input, "\n");
     var niceLineCount: i32 = 0;
