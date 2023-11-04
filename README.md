@@ -29,6 +29,9 @@ $ git submodule update
 $ zig build
 ```
 
+Submodules are not needed for every puzzle, but the build will not succeed
+without the declared dependencies.
+
 ### Test
 
 ```shell
